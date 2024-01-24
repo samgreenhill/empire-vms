@@ -18,7 +18,7 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
-			"extensions": ["ms-azuretools.vscode-docker", "ms-vscode.makefile-tools"]
+			"extensions": ["ms-azuretools.vscode-docker", "ms-vscode.makefile-tools", "ms-vscode.cpptools-extension-pack"]
 		}
 	}
 

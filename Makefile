@@ -10,6 +10,8 @@ VERS=1.13
 #DEBUG = -g -DDEBUG
 DEBUG = -O2
 
+CC = gcc
+
 # Use -p to profile the program.
 #PROFILE = -p -DPROFILE
 PROFILE =
@@ -19,61 +21,56 @@ LIBS = -lncurses
 # You shouldn't have to modify anything below this line.
 
 # There's a dynamic format in the object-display routines; suppress the warning
-CFLAGS = $(DEBUG) $(PROFILE) -Wall -Wno-format-security -fcommon
+CFLAGS = $(DEBUG) $(PROFILE) -Wall -Wno-format-security -fcommon -I${INC_DIR}
+
+INC_DIR = include
+SRC_DIR = src
+BUILD_DIR = build
 
 FILES = \
-	attack.c \
-	compmove.c \
-	data.c \
-	display.c \
-	edit.c \
-	empire.c \
-	game.c \
-	main.c \
-	map.c \
-	math.c \
-	object.c \
-	term.c \
-	usermove.c \
-	util.c
+	${SRC_DIR}/attack.c \
+	${SRC_DIR}/compmove.c \
+	${SRC_DIR}/data.c \
+	${SRC_DIR}/display.c \
+	${SRC_DIR}/edit.c \
+	${SRC_DIR}/empire.c \
+	${SRC_DIR}/game.c \
+	${SRC_DIR}/main.c \
+	${SRC_DIR}/map.c \
+	${SRC_DIR}/math.c \
+	${SRC_DIR}/object.c \
+	${SRC_DIR}/term.c \
+	${SRC_DIR}/usermove.c \
+	${SRC_DIR}/util.c
 
-HEADERS = empire.h extern.h
+HEADERS = ${INC_DIR}/empire.h ${INC_DIR}/extern.h
 
 OFILES = \
-	attack.o \
-	compmove.o \
-	data.o \
-	display.o \
-	edit.o \
-	empire.o \
-	game.o \
-	main.o \
-	map.o \
-	math.o \
-	object.o \
-	term.o \
-	usermove.o \
-	util.o
+	$(BUILD_DIR)/attack.o \
+	$(BUILD_DIR)/compmove.o \
+	$(BUILD_DIR)/data.o \
+	$(BUILD_DIR)/display.o \
+	$(BUILD_DIR)/edit.o \
+	$(BUILD_DIR)/empire.o \
+	$(BUILD_DIR)/game.o \
+	$(BUILD_DIR)/main.o \
+	$(BUILD_DIR)/map.o \
+	$(BUILD_DIR)/math.o \
+	$(BUILD_DIR)/object.o \
+	$(BUILD_DIR)/term.o \
+	$(BUILD_DIR)/usermove.o \
+	$(BUILD_DIR)/util.o
 
-all: vms-empire
+all: $(BUILD_DIR) vms-empire
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
 vms-empire: $(OFILES)
-	$(CC) $(PROFILE) -o vms-empire $(OFILES) $(LIBS)
+	$(CC) $(PROFILE) -o $(BUILD_DIR)/vms-empire $(OFILES) $(LIBS)
 
-attack.o:: extern.h empire.h
-compmove.o:: extern.h empire.h
-data.o:: empire.h
-display.o:: extern.h empire.h
-edit.o:: extern.h empire.h
-empire.o:: extern.h empire.h
-game.o:: extern.h empire.h
-main.o:: extern.h empire.h
-map.o:: extern.h empire.h
-math.o:: extern.h empire.h
-object.o:: extern.h empire.h
-term.o:: extern.h empire.h
-usermove.o:: extern.h empire.h
-util.o:: extern.h empire.h
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 empire.6: vms-empire.xml
 	xmlto man vms-empire.xml
@@ -89,7 +86,7 @@ lint: $(FILES)
 
 # cppcheck should run clean
 cppcheck:
-	cppcheck --inline-suppr --suppress=unusedStructMember --suppress=unusedFunction  --template gcc --enable=all --force *.[ch]
+	cppcheck --inline-suppr --suppress=unusedStructMember --suppress=unusedFunction  --template gcc --enable=all --force -I ${INC_DIR} ${SRC_DIR}/*.[c]
 
 install: empire.6 uninstall
 	install -m 0755 -d $(DESTDIR)/usr/bin
@@ -110,6 +107,7 @@ uninstall:
 	rm -f /usr/share/appdata/vms-empire.xml
 
 clean:
+	rm -rf build
 	rm -f *.o TAGS vms-empire
 	rm -f *.6 *.html
 
